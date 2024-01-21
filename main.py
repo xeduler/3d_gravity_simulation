@@ -28,13 +28,15 @@ perspective_projection(45, (width / height), 0.1, 50.0)
 
 
 class Model:
-    def __init__(self, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
+    def __init__(self, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0], load=""):
         self.vertices = []
         self.edges = []
         self.position = position
         self.rotation = rotation
         self.speed = speed
         self.rot_vec = rot_vec
+        if load != "":
+            self.load_model(load)
 
 
     def move(self):
@@ -64,14 +66,29 @@ class Model:
 
 
 
+class Scene:
+    def __init__(self, models):
+        self.models = models
 
 
+    def show(self):
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        glRotatef(1, 0, 0, 1)
+        glTranslatef(camera_pos[0], camera_pos[1], -0.01)
+
+        for model in self.models:
+            model.move()
+            model.draw()
+
+        
 
 
-cube1 = Model([-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0])
-cube2 = Model([3, 0, 0], [37, 3, 1, 3])
-cube1.load_model("cube.json")
-cube2.load_model("cube.json")
+main_scene = Scene([
+    Model([-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0], load="cube.json"),
+    Model([3, 0, 0], [37, 3, 1, 3], load="cube.json")
+])
+ 
 
 
 
@@ -82,15 +99,7 @@ while True:
             pygame.quit()
             quit()
 
-    
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    glRotatef(1, 0, 0, 1)
-    glTranslatef(camera_pos[0], camera_pos[1], -0.01)
-
-    cube1.move()
-    cube1.draw()
-    cube2.draw()
-
+    main_scene.show()
     pygame.display.flip()
     pygame.time.wait(10)
