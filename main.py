@@ -3,6 +3,7 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from math import tan
+import json
 
 def perspective_projection(fovy, aspect, zNear, zFar):
     f = 1.0 / tan(fovy / 2.0)
@@ -21,7 +22,7 @@ pygame.display.set_mode((width, height), DOUBLEBUF | OPENGL)
 pygame.display.set_caption("AAAAAAAAA")
 
 # Initial camera position
-camera_pos = [0.0, 0.0, -5.0]
+camera_pos = [0.0, 0.0, -2.0]
 
 perspective_projection(45, (width / height), 0.1, 50.0)
 
@@ -32,6 +33,8 @@ class Model:
         self.edges = edges
         self.position = position
         self.rotation = rotation
+
+
 
 
     def draw(self):
@@ -45,65 +48,22 @@ class Model:
         glEnd()
 
         glTranslatef(self.position[0] * -1, self.position[1] * -1, self.position[2] * -1)
-        glRotatef(self.rotation[0] * -1, self.rotation[1] * -1, self.rotation[2] * -1, self.rotation[3] * -1, )
+        glRotatef(self.rotation[0] * -1, self.rotation[1] * -1, self.rotation[2] * -1, self.rotation[3] * -1)
+    
+
+    def load_model(self, filename):
+        with open(filename) as input_file:
+            self.vertices, self.edges = json.load(input_file)
 
 
 
 
 cube1 = Model([-3, 0, 0])
 cube2 = Model([3, 0, 0])
+cube1.load_model("cube.json")
+cube2.load_model("cube.json")
 
-cube1.vertices = (
-    (1, -1, -1),
-    (1, 1, -1),
-    (-1, 1, -1),
-    (-1, -1, -1),
-    (1, -1, 1),
-    (1, 1, 1),
-    (-1, 1, 1),
-    (-1, -1, 1),
-)
 
-cube1.edges = (
-    (0, 1),
-    (1, 2),
-    (2, 3),
-    (3, 0),
-    (4, 5),
-    (5, 6),
-    (6, 7),
-    (7, 4),
-    (0, 4),
-    (1, 5),
-    (2, 6),
-    (3, 7),
-)
-
-cube2.vertices = (
-    (1, -1, -1),
-    (1, 1, -1),
-    (-1, 1, -1),
-    (-1, -1, -1),
-    (1, -1, 1),
-    (1, 1, 1),
-    (-1, 1, 1),
-    (-1, -1, 1),
-)
-
-cube2.edges = (
-    (0, 1),
-    (1, 2),
-    (2, 3),
-    (3, 0),
-    (4, 5),
-    (5, 6),
-    (6, 7),
-    (7, 4),
-    (0, 4),
-    (1, 5),
-    (2, 6),
-    (3, 7),
-)
 
 glTranslatef(*camera_pos)
 while True:
@@ -116,7 +76,7 @@ while True:
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     glRotatef(1, 0, 0, 1)
-    #glTranslatef(camera_pos[0], camera_pos[1], -0.01)
+    glTranslatef(camera_pos[0], camera_pos[1], -0.01)
 
     cube1.draw()
     cube2.draw()
