@@ -5,9 +5,6 @@ from OpenGL.GLUT import *
 from math import tan
 
 def perspective_projection(fovy, aspect, zNear, zFar):
-    """
-    Set up perspective projection using a custom function.
-    """
     f = 1.0 / tan(fovy / 2.0)
     matrix = [
         f / aspect, 0, 0, 0,
@@ -17,20 +14,46 @@ def perspective_projection(fovy, aspect, zNear, zFar):
     ]
     glMultMatrixf(matrix)
 
-# Initialize Pygame
 pygame.init()
 
-# Set up the display
 width, height = 800, 600
 pygame.display.set_mode((width, height), DOUBLEBUF | OPENGL)
-pygame.display.set_caption("Simple 3D Animation")
+pygame.display.set_caption("AAAAAAAAA")
 
-# Set up the perspective projection
+# Initial camera position
+camera_pos = [0.0, 0.0, -5.0]
+
 perspective_projection(45, (width / height), 0.1, 50.0)
-glTranslatef(0.0, 0.0, -5)
 
-# Define a cube vertices in counter-clockwise order
-vertices = (
+
+class Model:
+    def __init__(self, position=[0, 0, 0], rotation=[0, 0, 0, 0], vertices=[], edges=[]):
+        self.vertices = vertices
+        self.edges = edges
+        self.position = position
+        self.rotation = rotation
+
+
+    def draw(self):
+        glTranslatef(*self.position)
+        glRotatef(*self.rotation)
+
+        glBegin(GL_LINES)
+        for edge in self.edges:
+            for vertex in edge:
+                glVertex3fv(self.vertices[vertex])
+        glEnd()
+
+        glTranslatef(self.position[0] * -1, self.position[1] * -1, self.position[2] * -1)
+        glRotatef(self.rotation[0] * -1, self.rotation[1] * -1, self.rotation[2] * -1, self.rotation[3] * -1, )
+
+
+
+
+cube1 = Model([-3, 0, 0])
+cube2 = Model([3, 0, 0])
+
+cube1.vertices = (
     (1, -1, -1),
     (1, 1, -1),
     (-1, 1, -1),
@@ -41,8 +64,7 @@ vertices = (
     (-1, -1, 1),
 )
 
-# Define cube edges in counter-clockwise order
-edges = (
+cube1.edges = (
     (0, 1),
     (1, 2),
     (2, 3),
@@ -57,23 +79,47 @@ edges = (
     (3, 7),
 )
 
-# Main loop
+cube2.vertices = (
+    (1, -1, -1),
+    (1, 1, -1),
+    (-1, 1, -1),
+    (-1, -1, -1),
+    (1, -1, 1),
+    (1, 1, 1),
+    (-1, 1, 1),
+    (-1, -1, 1),
+)
+
+cube2.edges = (
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 0),
+    (4, 5),
+    (5, 6),
+    (6, 7),
+    (7, 4),
+    (0, 4),
+    (1, 5),
+    (2, 6),
+    (3, 7),
+)
+
+glTranslatef(*camera_pos)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
 
-    # Rotate the cube
-    glRotatef(1, 3, 1, 1)
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    # Draw cube
-    glBegin(GL_LINES)
-    for edge in edges:
-        for vertex in edge:
-            glVertex3fv(vertices[vertex])
-    glEnd()
+    glRotatef(1, 0, 0, 1)
+    #glTranslatef(camera_pos[0], camera_pos[1], -0.01)
+
+    cube1.draw()
+    cube2.draw()
 
     pygame.display.flip()
     pygame.time.wait(10)
