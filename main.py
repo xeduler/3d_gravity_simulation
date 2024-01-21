@@ -32,27 +32,19 @@ perspective_projection(45, (width / height), 0.1, 50.0)
 
 
 class Model:
-    def __init__(self, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0], load=""):
+    def __init__(self, load=""):
         self.vertices = []
         self.edges = []
-        self.position = position
-        self.rotation = rotation
-        self.speed = speed
-        self.rot_vec = rot_vec
+        
         if load != "":
             self.load_model(load)
 
 
-    def move(self):
-        for i in range(3):
-            self.position[i] += self.speed[i]
-        for i in range(4):
-            self.rotation[i] += self.rot_vec[i]
 
 
-    def draw(self):
-        glTranslatef(*self.position)
-        glRotatef(*self.rotation)
+    def draw(self, position, rotation):
+        glTranslatef(*position)
+        glRotatef(*rotation)
 
         glBegin(GL_LINES)
         for edge in self.edges:
@@ -60,8 +52,10 @@ class Model:
                 glVertex3fv(self.vertices[vertex])
         glEnd()
 
-        glRotatef(self.rotation[0] * -1, self.rotation[1], self.rotation[2], self.rotation[3])
-        glTranslatef(self.position[0] * -1, self.position[1] * -1, self.position[2] * -1)
+        print(rotation)
+
+        glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
+        glTranslatef(position[0] * -1, position[1] * -1, position[2] * -1)
     
 
     def load_model(self, filename):
@@ -70,9 +64,30 @@ class Model:
 
 
 
+class Body:
+    def __init__(self, mass, model, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
+        self.mass = mass
+        self.model = model
+        self.position = position
+        self.rotation = rotation
+        self.speed = speed
+        self.rot_vec = rot_vec
+    
+    def move(self):
+        for i in range(3):
+            self.position[i] += self.speed[i]
+        for i in range(4):
+            self.rotation[i] += self.rot_vec[i]
+        
+    
+    def draw(self):
+        self.model.draw(self.position, self.rotation)
+
+
+
 class Scene:
-    def __init__(self, models, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
-        self.models = models
+    def __init__(self, bodies, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
+        self.bodies = bodies
         self.position = position
         self.rotation = rotation
         self.speed = speed
@@ -84,9 +99,9 @@ class Scene:
     def show(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        for model in self.models:
-            model.move()
-            model.draw()
+        for body in self.bodies:
+            body.move()
+            body.draw()
         
 
     def move(self):
@@ -97,8 +112,8 @@ class Scene:
 
 
 main_scene = Scene([
-    Model([-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0], load="models/cube.json"),
-    Model([3, 0, 0], [37, 3, 1, 3], load="models/cube.json")],
+    Body(100, Model(load="models/cube.json"), [-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0]),
+    Body(10, Model(load="models/cube.json"), [3, 0, 0], [37, 3, 1, 3], )],
     position = [0.0, 0.0, -10.0],
     rotation = [1, 0, 0, 1],
     speed = [0, 0, -0.0]
