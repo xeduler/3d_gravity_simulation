@@ -2,83 +2,78 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
+from math import tan
 
-# Initialize Pygame and set up the display
+def perspective_projection(fovy, aspect, zNear, zFar):
+    """
+    Set up perspective projection using a custom function.
+    """
+    f = 1.0 / tan(fovy / 2.0)
+    matrix = [
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, (zFar + zNear) / (zNear - zFar), -1,
+        0, 0, (2.0 * zFar * zNear) / (zNear - zFar), 0
+    ]
+    glMultMatrixf(matrix)
+
+# Initialize Pygame
 pygame.init()
+
+# Set up the display
 width, height = 800, 600
 pygame.display.set_mode((width, height), DOUBLEBUF | OPENGL)
-glViewport(0, 0, width, height)
-glOrtho(0, width, height, 0, -1, 1)
+pygame.display.set_caption("Simple 3D Animation")
 
-# Simple vertex shader
-vertex_code = """
-    void main() {
-        gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-    }
-"""
+# Set up the perspective projection
+perspective_projection(45, (width / height), 0.1, 50.0)
+glTranslatef(0.0, 0.0, -5)
 
-# Simple fragment shader
-fragment_code = """
-    void main() {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-"""
+# Define a cube vertices in counter-clockwise order
+vertices = (
+    (1, -1, -1),
+    (1, 1, -1),
+    (-1, 1, -1),
+    (-1, -1, -1),
+    (1, -1, 1),
+    (1, 1, 1),
+    (-1, 1, 1),
+    (-1, -1, 1),
+)
 
-# Compile shaders and create shader program
-vertex_shader = glCreateShader(GL_VERTEX_SHADER)
-glShaderSource(vertex_shader, vertex_code)
-glCompileShader(vertex_shader)
+# Define cube edges in counter-clockwise order
+edges = (
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 0),
+    (4, 5),
+    (5, 6),
+    (6, 7),
+    (7, 4),
+    (0, 4),
+    (1, 5),
+    (2, 6),
+    (3, 7),
+)
 
-fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
-glShaderSource(fragment_shader, fragment_code)
-glCompileShader(fragment_shader)
-
-shader_program = glCreateProgram()
-glAttachShader(shader_program, vertex_shader)
-glAttachShader(shader_program, fragment_shader)
-glLinkProgram(shader_program)
-
-# Set up VBO (Vertex Buffer Object) for a simple quad
-vertices = [
-    100.0, 100.0, 0.0,
-    100.0, 500.0, 0.0,
-    500.0, 500.0, 0.0,
-    500.0, 100.0, 0.0,
-]
-
-vbo = glGenBuffers(1)
-glBindBuffer(GL_ARRAY_BUFFER, vbo)
-glBufferData(GL_ARRAY_BUFFER, len(vertices) * 4, (GLfloat * len(vertices))(*vertices), GL_STATIC_DRAW)
-
-# Main game loop
-clock = pygame.time.Clock()
-running = True
-while running:
+# Main loop
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            quit()
 
-    glClear(GL_COLOR_BUFFER_BIT)
+    # Rotate the cube
+    glRotatef(1, 3, 1, 1)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    # Use the shader program
-    glUseProgram(shader_program)
-
-    # Set up VAO (Vertex Array Object) and enable attributes
-    vao = glGenVertexArrays(1)
-    glBindVertexArray(vao)
-    glBindBuffer(GL_ARRAY_BUFFER, vbo)
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glVertexPointer(3, GL_FLOAT, 0, None)
-
-    # Draw the quad
-    glDrawArrays(GL_QUADS, 0, 4)
-
-    # Clean up
-    glDisableClientState(GL_VERTEX_ARRAY)
-    glBindBuffer(GL_ARRAY_BUFFER, 0)
-    glUseProgram(0)
+    # Draw cube
+    glBegin(GL_LINES)
+    for edge in edges:
+        for vertex in edge:
+            glVertex3fv(vertices[vertex])
+    glEnd()
 
     pygame.display.flip()
-    clock.tick(60)
-
-pygame.quit()
+    pygame.time.wait(10)
