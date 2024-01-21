@@ -28,13 +28,20 @@ perspective_projection(45, (width / height), 0.1, 50.0)
 
 
 class Model:
-    def __init__(self, position=[0, 0, 0], rotation=[0, 0, 0, 0], vertices=[], edges=[]):
-        self.vertices = vertices
-        self.edges = edges
+    def __init__(self, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
+        self.vertices = []
+        self.edges = []
         self.position = position
         self.rotation = rotation
+        self.speed = speed
+        self.rot_vec = rot_vec
 
 
+    def move(self):
+        for i in range(3):
+            self.position[i] += self.speed[i]
+        for i in range(4):
+            self.rotation[i] += self.rot_vec[i]
 
 
     def draw(self):
@@ -47,8 +54,8 @@ class Model:
                 glVertex3fv(self.vertices[vertex])
         glEnd()
 
+        glRotatef(self.rotation[0] * -1, self.rotation[1], self.rotation[2], self.rotation[3])
         glTranslatef(self.position[0] * -1, self.position[1] * -1, self.position[2] * -1)
-        glRotatef(self.rotation[0] * -1, self.rotation[1] * -1, self.rotation[2] * -1, self.rotation[3] * -1)
     
 
     def load_model(self, filename):
@@ -58,8 +65,11 @@ class Model:
 
 
 
-cube1 = Model([-3, 0, 0])
-cube2 = Model([3, 0, 0])
+
+
+
+cube1 = Model([-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0])
+cube2 = Model([3, 0, 0], [37, 3, 1, 3])
 cube1.load_model("cube.json")
 cube2.load_model("cube.json")
 
@@ -78,6 +88,7 @@ while True:
     glRotatef(1, 0, 0, 1)
     glTranslatef(camera_pos[0], camera_pos[1], -0.01)
 
+    cube1.move()
     cube1.draw()
     cube2.draw()
 
