@@ -5,6 +5,9 @@ from OpenGL.GLUT import *
 from math import tan
 import json
 
+
+
+
 def perspective_projection(fovy, aspect, zNear, zFar):
     f = 1.0 / tan(fovy / 2.0)
     matrix = [
@@ -15,14 +18,15 @@ def perspective_projection(fovy, aspect, zNear, zFar):
     ]
     glMultMatrixf(matrix)
 
+
+
+
 pygame.init()
 
-width, height = 800, 600
+width, height = 1000, 800
 pygame.display.set_mode((width, height), DOUBLEBUF | OPENGL)
-pygame.display.set_caption("AAAAAAAAA")
+pygame.display.set_caption("3D D:")
 
-# Initial camera position
-camera_pos = [0.0, 0.0, -2.0]
 
 perspective_projection(45, (width / height), 0.1, 50.0)
 
@@ -67,32 +71,43 @@ class Model:
 
 
 class Scene:
-    def __init__(self, models):
+    def __init__(self, models, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
         self.models = models
+        self.position = position
+        self.rotation = rotation
+        self.speed = speed
+        self.rot_vec = rot_vec
+
+        glTranslatef(*self.position)
 
 
     def show(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        glRotatef(1, 0, 0, 1)
-        glTranslatef(camera_pos[0], camera_pos[1], -0.01)
-
         for model in self.models:
             model.move()
             model.draw()
+        
+
+    def move(self):
+        glRotatef(*self.rotation)
+        glTranslatef(*self.speed)
 
         
 
 
 main_scene = Scene([
-    Model([-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0], load="cube.json"),
-    Model([3, 0, 0], [37, 3, 1, 3], load="cube.json")
-])
+    Model([-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0], load="models/cube.json"),
+    Model([3, 0, 0], [37, 3, 1, 3], load="models/cube.json")],
+    position = [0.0, 0.0, -10.0],
+    rotation = [1, 0, 0, 1],
+    speed = [0, 0, -0.0]
+)
  
 
 
 
-glTranslatef(*camera_pos)
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -100,6 +115,7 @@ while True:
             quit()
 
 
+    main_scene.move()
     main_scene.show()
     pygame.display.flip()
     pygame.time.wait(10)
