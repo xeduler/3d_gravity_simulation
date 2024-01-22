@@ -4,7 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from math import tan
 import json
-
+from copy import deepcopy
 
 
 
@@ -20,6 +20,19 @@ def perspective_projection(fovy, aspect, zNear, zFar):
 
 
 
+def dists(pos0, pos1):
+    return (pos0[0]-pos1[0])**2 + (pos0[1]-pos1[1])**2 + (pos0[2]-pos1[2])**2
+
+
+def acceleration_vector(force, pos0, pos1):
+    x = pos1[0] - pos0[0]
+    y = pos1[1] - pos0[1]
+    z = pos1[2] - pos0[2]
+
+    part = force / (abs(x)+abs(y)+abs(z))
+    return [x*part, y*part, z*part]
+
+
 
 pygame.init()
 
@@ -31,6 +44,12 @@ pygame.display.set_caption("3D D:")
 perspective_projection(45, (width / height), 0.1, 50.0)
 
 
+
+
+
+
+
+
 class Model:
     def __init__(self, load=""):
         self.vertices = []
@@ -38,8 +57,6 @@ class Model:
         
         if load != "":
             self.load_model(load)
-
-
 
 
     def draw(self, position, rotation):
@@ -52,8 +69,6 @@ class Model:
                 glVertex3fv(self.vertices[vertex])
         glEnd()
 
-        print(rotation)
-
         glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
         glTranslatef(position[0] * -1, position[1] * -1, position[2] * -1)
     
@@ -64,15 +79,31 @@ class Model:
 
 
 
+
+
+
 class Body:
-    def __init__(self, mass, model, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
+    def __init__(self, mass, model, position=None, rotation=None, speed=None, rot_vec=None):
         self.mass = mass
         self.model = model
-        self.position = position
-        self.rotation = rotation
-        self.speed = speed
-        self.rot_vec = rot_vec
-    
+        if position:
+            self.position = position
+        else:
+            self.position=[0, 0, 0]
+        if rotation:
+            self.rotation = rotation
+        else:
+            self.rotation=[0, 0, 0, 0]
+        if speed:
+            self.speed = speed
+        else:
+            self.speed = [0, 0, 0]
+        if rot_vec:
+            self.rot_vec = rot_vec
+        else:
+            self.rot_vec=[0, 0, 0, 0]
+
+
     def move(self):
         for i in range(3):
             self.position[i] += self.speed[i]
@@ -85,13 +116,28 @@ class Body:
 
 
 
+
+
+
 class Scene:
-    def __init__(self, bodies, position=[0,0,0], rotation=[0,0,0,0], speed=[0,0,0], rot_vec=[0,0,0,0]):
+    def __init__(self, bodies, position=None, rotation=None, speed=None, rot_vec=None):
         self.bodies = bodies
-        self.position = position
-        self.rotation = rotation
-        self.speed = speed
-        self.rot_vec = rot_vec
+        if position:
+            self.position = position
+        else:
+            self.position=[0, 0, 0]
+        if rotation:
+            self.rotation = rotation
+        else:
+            self.rotation=[0, 0, 0, 0]
+        if speed:
+            self.speed = speed
+        else:
+            self.speed = [0, 0, 0]
+        if rot_vec:
+            self.rot_vec = rot_vec
+        else:
+            self.rot_vec=[0, 0, 0, 0]
 
         glTranslatef(*self.position)
 
@@ -100,7 +146,6 @@ class Scene:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         for body in self.bodies:
-            body.move()
             body.draw()
         
 
@@ -108,17 +153,45 @@ class Scene:
         glRotatef(*self.rotation)
         glTranslatef(*self.speed)
 
+        for body in self.bodies:
+            body.move()
+
+
+
         
 
+class Gravity(Scene):
+    def move(self):
+        G = 6.67385e-11
+        for body in self.bodies:
+            for another in self.bodies:
+                if body is not another:
+                    x, y, z = acceleration_vector((G * another.mass / dists(body.position, another.position)), body.position, another.position)
+                    body.speed[0] = body.speed[0] + x
+                    body.speed[1] = body.speed[1] + y
+                    body.speed[2] = body.speed[2] + z 
 
-main_scene = Scene([
-    Body(100, Model(load="models/cube.json"), [-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0]),
-    Body(10, Model(load="models/cube.json"), [3, 0, 0], [37, 3, 1, 3], )],
+                
+                
+        
+        for body in self.bodies:
+            body.move()
+
+
+
+
+
+
+main_scene = Gravity(
+    [
+        Body(10000, Model(load="models/cube.json"), [-3, 0, 0], [87, 2, 0, 1], rot_vec=[1, 0, 0, 0]),
+        Body(10, Model(load="models/cube.json"), [3, 0, 0], [37, 3, 1, 3])
+    ],
     position = [0.0, 0.0, -10.0],
     rotation = [1, 0, 0, 1],
     speed = [0, 0, -0.0]
 )
- 
+
 
 
 
