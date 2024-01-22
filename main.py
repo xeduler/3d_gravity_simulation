@@ -184,7 +184,7 @@ class Gravity(Scene):
 main_scene = Gravity(
     [
         Body(100000000, Model(load="models/cube.json"), [0, 0, 0], [87, 2, 0, 1], rot_vec=[0.1, 0, 0, 0]),
-        Body(10, Model(load="models/cube.json"), [10, 0, 0], [-37, 3, 1, 3], speed=[0, 0.02, 0], rot_vec=[1, 0, 0, 0]),
+        Body(10, Model(load="models/pyramid.json"), [10, 0, 0], [-37, 3, 1, 3], speed=[0, 0.02, 0], rot_vec=[1, 0, 0, 0]),
         Body(10, Model(load="models/cube.json"), [-10, 0, 0], [7, 2, -1, -8], speed=[0, -0.02, 0], rot_vec=[1, 0, 0, 0])
     ],
     position = [0.0, 0.0, -20.0],
