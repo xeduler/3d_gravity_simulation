@@ -78,6 +78,22 @@ class Model:
 
 
 
+class EdgeModel(Model):
+    def draw(self, position, rotation):
+        glTranslatef(*position)
+        glRotatef(*rotation)
+
+        glBegin(GL_LINES)
+        for edge in self.edges:
+            glVertex3fv(edge[0])
+            glVertex3fv(edge[1])
+        glEnd()
+
+        glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
+        glTranslatef(position[0] * -1, position[1] * -1, position[2] * -1)
+
+
+
 
 
 
