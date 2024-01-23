@@ -14,15 +14,6 @@ from tools import *
 
 
 
-
-def acceleration_vector(force, pos0, pos1):
-    diff = pos1 - pos0
-
-    part = force / np.sum(np.abs(diff))
-    return diff * part
-
-
-
 pygame.init()
 
 width, height = 1000, 800

@@ -12,3 +12,12 @@ def perspective_projection(fovy, aspect, zNear, zFar):
 
 def dists(pos0, pos1):
     return np.sum((pos0 - pos1) ** 2)
+
+
+
+
+def acceleration_vector(force, pos0, pos1):
+    diff = pos1 - pos0
+
+    part = force / np.sum(np.abs(diff))
+    return diff * part
