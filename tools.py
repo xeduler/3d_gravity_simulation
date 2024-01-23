@@ -7,3 +7,8 @@ def perspective_projection(fovy, aspect, zNear, zFar):
         0, 0, (2.0 * zFar * zNear) / (zNear - zFar), 0
     ]
     glMultMatrixf(matrix)
+
+
+
+def dists(pos0, pos1):
+    return np.sum((pos0 - pos1) ** 2)

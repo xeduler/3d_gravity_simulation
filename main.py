@@ -6,14 +6,13 @@ from math import tan
 import json
 from itertools import combinations
 import numpy as np
-from tools import perspective_projection
+from tools import *
 
 
 
 
 
-def dists(pos0, pos1):
-    return np.sum((pos0 - pos1) ** 2)
+
 
 
 def acceleration_vector(force, pos0, pos1):
