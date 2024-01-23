@@ -5,6 +5,7 @@ from OpenGL.GLUT import *
 from math import tan
 import json
 from itertools import combinations
+import numpy as np
 
 
 def perspective_projection(fovy, aspect, zNear, zFar):
@@ -20,16 +21,14 @@ def perspective_projection(fovy, aspect, zNear, zFar):
 
 
 def dists(pos0, pos1):
-    return (pos0[0]-pos1[0])**2 + (pos0[1]-pos1[1])**2 + (pos0[2]-pos1[2])**2
+    return np.sum((np.array(pos0) - np.array(pos1)) ** 2) #FIXME
 
 
 def acceleration_vector(force, pos0, pos1):
-    x = pos1[0] - pos0[0]
-    y = pos1[1] - pos0[1]
-    z = pos1[2] - pos0[2]
+    diff = np.array(pos1) - np.array(pos0) #FIXME
 
-    part = force / (abs(x)+abs(y)+abs(z))
-    return [x*part, y*part, z*part]
+    part = force / np.sum(np.abs(diff))
+    return diff * part
 
 
 
@@ -69,7 +68,7 @@ class Model:
         glEnd()
 
         glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
-        glTranslatef(position[0] * -1, position[1] * -1, position[2] * -1)
+        glTranslatef(*(np.array(position) * -1)) #FIXME
     
 
     def load_model(self, filename):
@@ -90,7 +89,7 @@ class EdgeModel(Model):
         glEnd()
 
         glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
-        glTranslatef(position[0] * -1, position[1] * -1, position[2] * -1)
+        glTranslatef(*(np.array(position) * -1)) #FIXME
 
 
 
@@ -182,14 +181,8 @@ class Gravity(Scene):
         for pair in combinations(self.bodies, 2):
             body, another = pair
             force = G / dists(body.position, another.position)
-            x, y, z = acceleration_vector(force * another.mass, body.position, another.position)
-            body.speed[0] = body.speed[0] + x
-            body.speed[1] = body.speed[1] + y
-            body.speed[2] = body.speed[2] + z 
-            x, y, z = acceleration_vector(force * body.mass, another.position, body.position)
-            another.speed[0] = another.speed[0] + x
-            another.speed[1] = another.speed[1] + y
-            another.speed[2] = another.speed[2] + z 
+            body.speed = np.array(body.speed) + np.array(acceleration_vector(force * another.mass, body.position, another.position)) #FIXME
+            another.speed = np.array(another.speed) + np.array(acceleration_vector(force * body.mass, another.position, body.position)) #FIXME
 
                 
                 
@@ -210,7 +203,7 @@ main_scene = Gravity(
     ],
     position = [0.0, 0.0, -20.0],
     rotation = [1, 0, 0, 1],
-    speed = [0, 0, -0.0]
+    speed = [0, 0, 0.0]
 )
 
 
