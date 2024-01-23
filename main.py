@@ -4,7 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from math import tan
 import json
-from itertools import permutations
+from itertools import combinations
 
 
 def perspective_projection(fovy, aspect, zNear, zFar):
@@ -179,12 +179,17 @@ class Gravity(Scene):
     def move(self):
         G = 6.67385e-11
         
-        for pair in permutations(self.bodies, 2):
+        for pair in combinations(self.bodies, 2):
             body, another = pair
-            x, y, z = acceleration_vector((G * another.mass / dists(body.position, another.position)), body.position, another.position)
+            force = G / dists(body.position, another.position)
+            x, y, z = acceleration_vector(force * another.mass, body.position, another.position)
             body.speed[0] = body.speed[0] + x
             body.speed[1] = body.speed[1] + y
             body.speed[2] = body.speed[2] + z 
+            x, y, z = acceleration_vector(force * body.mass, another.position, body.position)
+            another.speed[0] = another.speed[0] + x
+            another.speed[1] = another.speed[1] + y
+            another.speed[2] = another.speed[2] + z 
 
                 
                 
