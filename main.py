@@ -6,6 +6,7 @@ from math import tan
 import json
 from itertools import combinations
 import numpy as np
+from tools import perspective_projection
 
 
 def perspective_projection(fovy, aspect, zNear, zFar):
@@ -21,11 +22,11 @@ def perspective_projection(fovy, aspect, zNear, zFar):
 
 
 def dists(pos0, pos1):
-    return np.sum((np.array(pos0) - np.array(pos1)) ** 2) #FIXME
+    return np.sum((pos0 - pos1) ** 2)
 
 
 def acceleration_vector(force, pos0, pos1):
-    diff = np.array(pos1) - np.array(pos0) #FIXME
+    diff = pos1 - pos0
 
     part = force / np.sum(np.abs(diff))
     return diff * part
@@ -68,7 +69,7 @@ class Model:
         glEnd()
 
         glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
-        glTranslatef(*(np.array(position) * -1)) #FIXME
+        glTranslatef(*(position * -1))
     
 
     def load_model(self, filename):
@@ -89,7 +90,7 @@ class EdgeModel(Model):
         glEnd()
 
         glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
-        glTranslatef(*(np.array(position) * -1)) #FIXME
+        glTranslatef(*(position * -1))
 
 
 
@@ -101,21 +102,21 @@ class Body:
         self.mass = mass
         self.model = model
         if position:
-            self.position = position
+            self.position = np.array(position, dtype=np.float64)
         else:
-            self.position=[0, 0, 0]
+            self.position = np.array([0, 0, 0], dtype=np.float64)
         if rotation:
-            self.rotation = rotation
+            self.rotation = np.array(rotation, dtype=np.float64)
         else:
-            self.rotation=[0, 0, 0, 0]
+            self.rotation = np.array([0, 0, 0, 0], dtype=np.float64)
         if speed:
-            self.speed = speed
+            self.speed = np.array(speed, dtype=np.float64)
         else:
-            self.speed = [0, 0, 0]
+            self.speed = np.array([0, 0, 0], dtype=np.float64)
         if rot_vec:
-            self.rot_vec = rot_vec
+            self.rot_vec = np.array(rot_vec, dtype=np.float64)
         else:
-            self.rot_vec=[0, 0, 0, 0]
+            self.rot_vec = np.array([0, 0, 0, 0], dtype=np.float64)
 
 
     def move(self):
@@ -137,21 +138,21 @@ class Scene:
     def __init__(self, bodies, position=None, rotation=None, speed=None, rot_vec=None):
         self.bodies = bodies
         if position:
-            self.position = position
+            self.position = np.array(position, dtype=np.float64)
         else:
-            self.position=[0, 0, 0]
+            self.position = np.array([0, 0, 0], dtype=np.float64)
         if rotation:
-            self.rotation = rotation
+            self.rotation = np.array(rotation, dtype=np.float64)
         else:
-            self.rotation=[0, 0, 0, 0]
+            self.rotation = np.array([0, 0, 0, 0], dtype=np.float64)
         if speed:
-            self.speed = speed
+            self.speed = np.array(speed, dtype=np.float64)
         else:
-            self.speed = [0, 0, 0]
+            self.speed = np.array([0, 0, 0], dtype=np.float64)
         if rot_vec:
-            self.rot_vec = rot_vec
+            self.rot_vec = np.array(rot_vec, dtype=np.float64)
         else:
-            self.rot_vec=[0, 0, 0, 0]
+            self.rot_vec = np.array([0, 0, 0, 0], dtype=np.float64)
 
         glTranslatef(*self.position)
 
@@ -181,8 +182,8 @@ class Gravity(Scene):
         for pair in combinations(self.bodies, 2):
             body, another = pair
             force = G / dists(body.position, another.position)
-            body.speed = np.array(body.speed) + np.array(acceleration_vector(force * another.mass, body.position, another.position)) #FIXME
-            another.speed = np.array(another.speed) + np.array(acceleration_vector(force * body.mass, another.position, body.position)) #FIXME
+            body.speed = body.speed + acceleration_vector(force * another.mass, body.position, another.position)
+            another.speed = another.speed + acceleration_vector(force * body.mass, another.position, body.position)
 
                 
                 
