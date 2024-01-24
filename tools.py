@@ -1,3 +1,7 @@
+from math import tan
+import numpy as np
+from OpenGL.GL import glMultMatrixf
+
 def perspective_projection(fovy, aspect, zNear, zFar):
     f = 1.0 / tan(fovy / 2.0)
     matrix = [

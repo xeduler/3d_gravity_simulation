@@ -2,7 +2,6 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
-from math import tan
 import json
 from itertools import combinations
 import numpy as np
@@ -165,9 +164,6 @@ class Gravity(Scene):
             force = G / dists(body.position, another.position)
             body.speed = body.speed + acceleration_vector(force * another.mass, body.position, another.position)
             another.speed = another.speed + acceleration_vector(force * body.mass, another.position, body.position)
-
-                
-                
         
         for body in self.bodies:
             body.move()
