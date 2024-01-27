@@ -15,9 +15,11 @@ from tools import *
 
 pygame.init()
 
-width, height = 1000, 800
+width, height = 1920, 1000
+FPS = 30
 pygame.display.set_mode((width, height), DOUBLEBUF | OPENGL)
 pygame.display.set_caption("3D D:")
+clock = pygame.time.Clock()
 
 
 perspective_projection(45, (width / height), 0.1, 50.0)
@@ -59,6 +61,13 @@ class Model:
 
 
 class EdgeModel(Model):
+    def __init__(self, load=""):
+        self.edges = []
+        
+        if load != "":
+            self.load_model(load)
+
+
     def draw(self, position, rotation):
         glTranslatef(*position)
         glRotatef(*rotation)
@@ -71,6 +80,11 @@ class EdgeModel(Model):
 
         glRotatef(rotation[0] * -1, rotation[1], rotation[2], rotation[3])
         glTranslatef(*(position * -1))
+    
+
+    def load_model(self, filename):
+        with open(filename) as input_file:
+            self.edges = json.load(input_file)
 
 
 
@@ -135,6 +149,8 @@ class Scene:
             self.rot_vec = np.array([0, 0, 0, 0], dtype=np.float64)
 
         glTranslatef(*self.position)
+        glRotatef(*self.rotation)
+
 
 
     def show(self):
@@ -146,7 +162,7 @@ class Scene:
 
     def move(self):
         glRotatef(*self.rotation)
-        glTranslatef(*self.speed)
+        glTranslatef(*self.rot_vec)
 
         for body in self.bodies:
             body.move()
@@ -173,15 +189,29 @@ class Gravity(Scene):
 
 
 
+#main_scene = Gravity(
+#    [
+#        Body(100000000, Model(load="models/cube.json"), [0, 0, 0], [87, 2, 0, 1], rot_vec=[0.1, 0, 0, 0]),
+#        Body(10, Model(load="models/pyramid.json"), [10, 0, 0], [-37, 3, 1, 3], speed=[0, 0.02, 0], rot_vec=[1, 0, 0, 0]),
+#        Body(10, Model(load="models/cube.json"), [-10, 0, 0], [7, 2, -1, -8], speed=[0, -0.02, 0], rot_vec=[1, 0, 0, 0])
+#    ],
+#    position = [0.0, 0.0, -20.0],
+#    rotation = [1, 0, 0, 1],
+#    speed = [0, 0, 0.0]
+#)
+
+
+
 main_scene = Gravity(
     [
-        Body(100000000, Model(load="models/cube.json"), [0, 0, 0], [87, 2, 0, 1], rot_vec=[0.1, 0, 0, 0]),
-        Body(10, Model(load="models/pyramid.json"), [10, 0, 0], [-37, 3, 1, 3], speed=[0, 0.02, 0], rot_vec=[1, 0, 0, 0]),
-        Body(10, Model(load="models/cube.json"), [-10, 0, 0], [7, 2, -1, -8], speed=[0, -0.02, 0], rot_vec=[1, 0, 0, 0])
+        Body(100000000, Model(load="models/pyramid.json"), [0, 0, 0], [87, 2, 0, 1], rot_vec=[0.1, 0, 0, 0]),
+        Body(1000, Model(load="models/cube.json"), [15, 0, 0], [-37, 0.3, 0.1, 0.3], speed=[0, 0.02, 0], rot_vec=[0.1, 0, 0, 0]),
+        Body(10, Model(load="models/cube.json"), [15, 4, 0], [7, 2, -1, -8], speed=[0.00, 0.02, 0], rot_vec=[0.1, 0, 0, 0])
     ],
-    position = [0.0, 0.0, -20.0],
-    rotation = [1, 0, 0, 1],
-    speed = [0, 0, 0.0]
+    position = [0.0, 0.0, -35.0],
+    rotation = [130, 1, 0, 0],
+    speed = [0, 0, 0.0],
+    #rot_vec = [1, 0, 0, 0]
 )
 
 
@@ -198,4 +228,5 @@ if __name__ == "__main__":
         main_scene.move()
         main_scene.show()
         pygame.display.flip()
-        pygame.time.wait(10)
+        pygame.time.wait(1)
+        #clock.tick(FPS)
